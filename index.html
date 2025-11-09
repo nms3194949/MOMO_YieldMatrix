@@ -132,6 +132,18 @@ td input:focus{border-color:var(--gold-soft)}
     </div>
   </div>
 
+  <!-- ===== 指標說明 Web Component 區塊 ===== -->
+  <div class="panel" style="margin-top:12px">
+    <div class="spread">
+      <h3 style="margin:0;color:var(--gold-soft)">指標說明</h3>
+      <span class="small">五卡並排｜公式常駐｜ⓘ Tooltip 可點擊鎖定</span>
+    </div>
+    <div style="margin-top:8px">
+      <momo-metric title="基金評分指標說明"></momo-metric>
+    </div>
+  </div>
+  <!-- ===== /指標說明 ===== -->
+
   <!-- 輸入表（固定高＋垂直捲動軸） -->
   <div class="panel" style="margin-top:12px">
     <div class="spread">
@@ -633,5 +645,233 @@ loadUI();
 applyVisibility();
 setLamp('red','未匯入');
 </script>
+
+<!-- ===== momo-metric Web Component（指標說明） ===== -->
+<script>
+class MomoMetric extends HTMLElement{
+  static get observedAttributes(){ return ['title']; }
+  constructor(){
+    super();
+    const root = this.attachShadow({mode:'open'});
+    root.innerHTML = `
+      <style>
+      :host{
+        --deep:#0A1221; --card:#0C152A; --ink:#EDEFF5; --muted:#A7B0C0;
+        --gold:#C9A227; --gold-soft:#E9D18A; --line:rgba(233,209,138,.22);
+        display:block; font-family:inherit; color:var(--ink);
+      }
+      .wrap{margin:8px 0 0; padding:0; max-width:100%}
+      .title{margin:0 0 10px; font-size:18px; color:var(--gold-soft); letter-spacing:.5px}
+      .grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px}
+      .card{
+        background:linear-gradient(180deg, rgba(12,21,42,.88), rgba(10,18,33,.96));
+        border:1px solid var(--line);
+        border-radius:14px;
+        padding:14px;
+        color:var(--ink);
+        position:relative;
+      }
+      .head{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+      .emoji{font-size:20px; line-height:1}
+      .acr{font-weight:800; letter-spacing:.5px}
+      .sub{font-size:12px; color:var(--muted)}
+      .points{margin:10px 0 8px 18px; padding:0; line-height:1.6}
+      .points li{margin:4px 0}
+      .formula{
+        margin-top:8px; font-size:12px; color:var(--muted);
+        border-top:1px dashed var(--line); padding-top:8px
+      }
+      .formula span{white-space:nowrap}
+
+      .info{
+        margin-left:auto;
+        width:26px; height:26px; border-radius:50%;
+        border:1px solid var(--line); background:#0F1A34; color:var(--gold-soft);
+        display:inline-flex; align-items:center; justify-content:center;
+        cursor:pointer; font-weight:700;
+      }
+      .tooltip{
+        position:absolute; right:12px; top:46px; z-index:2;
+        max-width:320px; padding:10px 12px; border-radius:12px;
+        background:#0F1A34; color:var(--ink); border:1px solid var(--line);
+        box-shadow:0 6px 20px rgba(0,0,0,.35);
+        font-size:12px; line-height:1.6;
+        display:none;
+      }
+      .card:hover .info[data-tooltip]:hover + .tooltip,
+      .info[aria-expanded="true"] + .tooltip{display:block}
+
+      @media (max-width:1200px){ .grid{grid-template-columns:repeat(4,1fr);} }
+      @media (max-width:980px){ .grid{grid-template-columns:repeat(3,1fr);} }
+      @media (max-width:720px){ .grid{grid-template-columns:repeat(2,1fr);} }
+      @media (max-width:520px){ .grid{grid-template-columns:1fr;} .tooltip{right:10px; left:10px; max-width:unset} }
+      </style>
+
+      <section class="wrap" aria-labelledby="momo-metric-title">
+        <h2 id="momo-metric-title" class="title"></h2>
+
+        <div class="grid">
+          <!-- 1) TWR -->
+          <article class="card">
+            <header class="head">
+              <span class="emoji" aria-hidden="true">🟡</span>
+              <div>
+                <div class="acr">TWR</div>
+                <div class="sub">時間加權報酬</div>
+              </div>
+              <button class="info" aria-describedby="tip-twr" aria-label="TWR 說明" data-tooltip>ⓘ</button>
+              <span role="tooltip" id="tip-twr" class="tooltip">
+                模擬「定期定額」的平均報酬；每段期間等權重，排除投入金額多寡影響。<br>
+                高 TWR ⇒ 長期趨勢佳、複利效果好。
+              </span>
+            </header>
+            <ul class="points">
+              <li>模擬<b>定期定額</b>的平均報酬。</li>
+              <li>每段期間<b>等權重</b>，不受金額影響。</li>
+              <li>TWR 高 → 長期趨勢與複利強。</li>
+            </ul>
+            <div class="formula">
+              (1+TWR) = <span>∏(1+R<sub>t</sub>)</span><sup>1/n</sup> − 1
+            </div>
+          </article>
+
+          <!-- 2) MWR -->
+          <article class="card">
+            <header class="head">
+              <span class="emoji" aria-hidden="true">🟢</span>
+              <div>
+                <div class="acr">MWR</div>
+                <div class="sub">資金加權報酬</div>
+              </div>
+              <button class="info" aria-describedby="tip-mwr" aria-label="MWR 說明" data-tooltip>ⓘ</button>
+              <span role="tooltip" id="tip-mwr" class="tooltip">
+                模擬「一次投入或不等額投入」的實際資金報酬；各期間依資金比重加權。<br>
+                高 MWR ⇒ 近期投入績效表現亮眼。
+              </span>
+            </header>
+            <ul class="points">
+              <li>模擬<b>一次投入/不等額</b>績效。</li>
+              <li>各期依<b>投入金額</b>加權。</li>
+              <li>MWR 高 → 近期表現強。</li>
+            </ul>
+            <div class="formula">
+              MWR = 解 IRR，使 <span>∑ CF<sub>t</sub> / (1+IRR)<sup>t</sup> = 0</span>
+            </div>
+          </article>
+
+          <!-- 3) SAR -->
+          <article class="card">
+            <header class="head">
+              <span class="emoji" aria-hidden="true">🟣</span>
+              <div>
+                <div class="acr">SAR</div>
+                <div class="sub">穩定報酬指標</div>
+              </div>
+              <button class="info" aria-describedby="tip-sar" aria-label="SAR 說明" data-tooltip>ⓘ</button>
+              <span role="tooltip" id="tip-sar" class="tooltip">
+                綜合 1Y/3Y/5Y 的中長期報酬，再乘上 GC（成長一致性）。<br>
+                高 SAR ⇒ 長線報酬「又快又穩」。
+              </span>
+            </header>
+            <ul class="points">
+              <li>綜合 <b>1Y/3Y/5Y</b> 表現。</li>
+              <li>乘上 <b>GC</b>（一致性）。</li>
+              <li>SAR 高 → 長線穩健。</li>
+            </ul>
+            <div class="formula">
+              SAR = (0.2×1Y + 0.4×3Y + 0.4×5Y) × GC
+            </div>
+          </article>
+
+          <!-- 4) RSI -->
+          <article class="card">
+            <header class="head">
+              <span class="emoji" aria-hidden="true">🔵</span>
+              <div>
+                <div class="acr">RSI</div>
+                <div class="sub">報酬穩定指數</div>
+              </div>
+              <button class="info" aria-describedby="tip-rsi" aria-label="RSI 說明" data-tooltip>ⓘ</button>
+              <span role="tooltip" id="tip-rsi" class="tooltip">
+                平均報酬 ÷ 報酬標準差（波動）；類夏普概念，看「穩不穩」。<br>
+                高 RSI ⇒ 報酬平順穩健。
+              </span>
+            </header>
+            <ul class="points">
+              <li>平均報酬 ÷ <b>標準差</b>。</li>
+              <li>評估<b>穩定度</b>。</li>
+              <li>RSI 高 → 體質佳。</li>
+            </ul>
+            <div class="formula">
+              RSI = <span>Avg(Return)</span> / <span>Std(Return)</span>
+            </div>
+          </article>
+
+          <!-- 5) MOMO -->
+          <article class="card">
+            <header class="head">
+              <span class="emoji" aria-hidden="true">🟠</span>
+              <div>
+                <div class="acr">MOMO</div>
+                <div class="sub">整體動能分數</div>
+              </div>
+              <button class="info" aria-describedby="tip-momo" aria-label="MOMO 說明" data-tooltip>ⓘ</button>
+              <span role="tooltip" id="tip-momo" class="tooltip">
+                綜合 TWR（長期）、MWR（近期）、GC（一致性），並以 Coverage 微調。<br>
+                高 MOMO ⇒ 穩健且動能強。
+              </span>
+            </header>
+            <ul class="points">
+              <li>綜合 <b>TWR</b>、<b>MWR</b>、<b>GC</b>。</li>
+              <li>含 <b>Coverage</b> 微調。</li>
+              <li>MOMO 高 → 強而穩。</li>
+            </ul>
+            <div class="formula">
+              MOMO = 0.4×TWRⁿ + 0.3×MWRⁿ + 0.3×GC（× Coverage 調整）
+            </div>
+          </article>
+        </div>
+      </section>
+    `;
+  }
+  connectedCallback(){
+    const t = this.getAttribute('title') || '基金評分指標說明';
+    this.shadowRoot.getElementById('momo-metric-title').textContent = t;
+    // Tooltip 可點擊鎖定（再次點擊或點組件外關閉）
+    this.shadowRoot.querySelectorAll('.info').forEach(info=>{
+      let locked=false;
+      info.addEventListener('click',(e)=>{
+        locked=!locked;
+        info.setAttribute('aria-expanded',locked?'true':'false');
+        const tip=info.nextElementSibling;
+        if(!tip||!tip.classList.contains('tooltip'))return;
+        tip.style.display=locked?'block':'';
+        e.stopPropagation();
+      });
+    });
+    // 點擊外面關閉
+    document.addEventListener('click', (e)=>{
+      const root = this.shadowRoot;
+      if(!root) return;
+      const path = e.composedPath ? e.composedPath() : [];
+      const inside = path.includes(root);
+      if(inside) return;
+      root.querySelectorAll('.info[aria-expanded="true"]').forEach(info=>{
+        info.setAttribute('aria-expanded','false');
+        const tip=info.nextElementSibling;
+        if(tip&&tip.classList.contains('tooltip')) tip.style.display='';
+      });
+    });
+  }
+  attributeChangedCallback(name, oldV, newV){
+    if(name==='title' && this.shadowRoot){
+      this.shadowRoot.getElementById('momo-metric-title').textContent = newV || '基金評分指標說明';
+    }
+  }
+}
+customElements.define('momo-metric', MomoMetric);
+</script>
+<!-- ===== /momo-metric ===== -->
+
 </body>
 </html>
