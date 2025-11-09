@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>FundMetric Pro｜Multi-Period Return & Stability Analyzer</title>
+<title>FundMetric Pro｜Analyzer（可捲動輸入表＋指標說明）</title>
 <meta name="theme-color" content="#0A1221" />
 <style>
 :root{
@@ -13,429 +13,572 @@
 }
 *{box-sizing:border-box}
 body{
-  margin:0; font-family:"Noto Sans TC", system-ui, -apple-system, Segoe UI, Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
-  color:var(--ink);
+  margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,Segoe UI,Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);
   background:radial-gradient(1200px 600px at 70% -10%, #132041 0%, #0A1221 40%, #07101F 100%);
 }
 header{padding:28px 16px 6px; text-align:center}
-h1{margin:0; font-size:26px; letter-spacing:.3px}
+h1{margin:0; font-size:26px}
 .sub{color:var(--muted); font-size:13px; margin-top:6px}
 .wrap{max-width:1200px; margin:16px auto 60px; padding:0 14px}
-.panel{
-  background:linear-gradient(180deg, rgba(12,21,42,.85), rgba(10,18,33,.95));
-  border:1px solid var(--line); border-radius:14px; padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
-}
+.panel{background:linear-gradient(180deg, rgba(12,21,42,.85), rgba(10,18,33,.95)); border:1px solid var(--line); border-radius:14px; padding:16px;}
 .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-button{
-  background:linear-gradient(90deg, #F9E27C 0%, #D9B84B 50%, #B88A1E 100%);
-  color:#1A1404; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer
-}
+.spread{display:flex; justify-content:space-between; align-items:center}
+button{background:linear-gradient(90deg,#F9E27C 0%,#D9B84B 50%,#B88A1E 100%); color:#1A1404; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
 button.secondary{background:transparent; color:var(--gold-soft); border:1px solid var(--line)}
 button.ghost{background:transparent; color:var(--muted); border:1px dashed var(--line)}
 .small{font-size:12px; color:var(--muted)}
-.badge{display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:99px; color:var(--gold-soft); font-size:12px}
+.badge{display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:999px; color:var(--gold-soft); font-size:12px}
 table{width:100%; border-collapse:collapse; margin-top:10px; font-size:14px}
 th,td{border-bottom:1px dashed var(--line); padding:8px 6px; text-align:center}
 th{color:var(--gold-soft); font-weight:700}
-td input{
-  width:100%; background:#0F1A34; color:var(--ink); border:1px solid rgba(255,255,255,.08);
-  border-radius:8px; padding:8px 8px; font-size:14px; outline:none;
-}
-td input:focus{border-color:var(--gold-soft); box-shadow:0 0 0 3px rgba(233,209,138,.1)}
-.ctrl{display:flex; gap:8px; justify-content:flex-end; margin-top:8px}
-footer{color:var(--muted); text-align:center; margin:22px 0 40px; font-size:12px}
-
-/* 摘要表風格（適合截圖） */
-.summary-head{
-  display:flex; justify-content:space-between; align-items:center; margin:6px 0 4px;
-}
-.summary-title{color:var(--gold-soft); margin:0; font-size:16px}
-.summary-box{
-  margin-top:12px; padding:14px;
-  background:linear-gradient(180deg, rgba(14,24,46,.92), rgba(9,16,29,.96));
-  border:1px solid var(--line); border-radius:14px;
-}
-.summary-note{font-size:12px; color:var(--muted); margin-top:6px}
-@media (max-width:980px){
-  table{font-size:13px}
-  td input{font-size:13px}
-}
+td input{width:100%; background:#0F1A34; color:var(--ink); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:8px 8px; font-size:14px; outline:none;}
+td input:focus{border-color:var(--gold-soft)}
+.export-bar{display:flex; flex-wrap:wrap; gap:14px; align-items:center; border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-top:14px}
+.export-bar label{display:flex; gap:6px; align-items:center; font-size:13px; color:var(--muted)}
+.export-bar input[type=checkbox]{transform:scale(1.05); accent-color:#D9B84B}
+.summary-box{margin-top:12px; padding:14px; background:linear-gradient(180deg, rgba(14,24,46,.92), rgba(9,16,29,.96)); border:1px solid var(--line); border-radius:14px;}
+.status{display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px dashed var(--line); border-radius:10px;}
+.lamp{width:10px; height:10px; border-radius:50%}
+.lamp.red{background:#C6535C; box-shadow:0 0 8px rgba(198,83,92,.8)}
+.lamp.green{background:#2D7A77; box-shadow:0 0 8px rgba(45,122,119,.8)}
+.lamp.amber{background:#B6801E; box-shadow:0 0 8px rgba(182,128,30,.8)}
+/* 診斷面板 */
+.kv{display:grid; grid-template-columns:180px 1fr; gap:6px 12px;}
+.kv b{color:var(--gold-soft)}
+.pre{white-space:pre-wrap; text-align:left; background:#0F1A34; border:1px dashed var(--line); border-radius:10px; padding:8px; font-size:12px; color:#cfe1ff}
+/* 原始檔預覽（多頁切換） */
+.tabs{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.tab{padding:6px 10px; border:1px solid var(--line); border-radius:999px; cursor:pointer; color:var(--muted); background:transparent}
+.tab.active{color:#1A1404; background:linear-gradient(90deg,#F9E27C 0%,#D9B84B 50%,#B88A1E 100%); border-color:transparent}
+.rawwrap{margin-top:10px; border:1px dashed var(--line); border-radius:12px; padding:10px; overflow:auto; max-height:420px}
+.rawwrap table{min-width:600px; border-collapse:collapse}
+.rawwrap td,.rawwrap th{border:1px solid rgba(233,209,138,.15); padding:6px 8px; text-align:left; color:#EDEFF5}
+.rawwrap th{background:#132041; color:#E9D18A}
+/* 可捲動輸入表 */
+#inputScroll{max-height:520px; overflow:auto; border:1px dashed var(--line); border-radius:12px; padding:2px;}
+#tbl thead th{position:sticky; top:0; background:#0C152A; z-index:1}
+/* 排序、行數控制、指標說明 */
+.sort-group{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.sort-group .chip{padding:8px 10px; border:1px solid var(--line); border-radius:999px; background:#0F1A34; color:#cfd7ea; cursor:pointer; font-size:13px}
+.sort-group .chip.active{color:#1A1404; background:linear-gradient(90deg,#F9E27C 0%,#D9B84B 50%,#B88A1E 100%); border-color:transparent; font-weight:700}
+.range-wrap{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.range-wrap input[type=number]{width:80px; background:#0F1A34; color:#EDEFF5; border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:6px 8px}
+input[type=range]{accent-color:#D9B84B}
+.hint{background:#0F1A34; border:1px dashed var(--line); border-radius:12px; padding:10px 12px; color:#cfd7ea; font-size:13px; line-height:1.6}
+.hint b{color:#E9D18A}
+@media (max-width:980px){table{font-size:13px} td input{font-size:13px} .kv{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <h1>FundMetric Pro <span class="badge">Multi-Period Return & Stability Analyzer</span></h1>
-  <div class="sub">批次輸入或匯入 1M/3M/6M、1Y/3Y/5Y（可用 12 或 12%），自動計算 TWR／MWR／SAR／RSI／GC／MOMO，並輸出 Excel 或「截圖摘要表」</div>
+  <h1>FundMetric Pro <span class="badge">Analyzer</span></h1>
+  <div class="sub">匯入計算｜排序控制｜可捲動輸入表｜原始 Excel 預覽</div>
 </header>
 
 <div class="wrap">
-
-  <!-- 操作列 -->
+  <!-- 工具列 + 燈號 -->
   <div class="panel">
-    <div class="row">
+    <div class="row" style="width:100%">
       <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" />
-      <button id="btnImport">匯入 Excel/CSV</button>
-      <button class="secondary" id="btnTemplate">下載匯入範本</button>
+      <button id="btnImport">匯入 Excel</button>
       <button class="secondary" id="btnAdd">新增一筆基金</button>
       <button class="ghost" id="btnClear">清空</button>
       <button id="btnCalc">計算全部</button>
       <div style="flex:1"></div>
-      <span class="small">權重固定（後台）：TWR=[5,10,15,20,25,25]、MWR=[30,25,20,15,10,0]；MOMO 會用 Coverage 做公平調整</span>
+      <div id="importStatus" class="status">
+        <div id="lamp" class="lamp red"></div>
+        <span id="lampText" class="small">未匯入</span>
+      </div>
+    </div>
+    <div class="small" style="margin-top:8px;color:var(--muted)">權重（後台固定）：TWR=[10.526,15.789,21.053,26.316,26.316]、MWR=[35.714,28.571,21.429,14.286,0]</div>
+  </div>
+
+  <!-- 排序 + 行數控制 + 指標說明 -->
+  <div class="panel" style="margin-top:12px">
+    <div class="spread" style="gap:16px; flex-wrap:wrap">
+      <div class="sort-group" id="sortGroup">
+        <span class="small" style="margin-right:4px">排序：</span>
+        <button class="chip" data-m="TWR">TWR</button>
+        <button class="chip" data-m="MWR">MWR</button>
+        <button class="chip" data-m="SAR">SAR</button>
+        <button class="chip" data-m="RSI">RSI</button>
+        <button class="chip active" data-m="MOMO">MOMO（預設）</button>
+      </div>
+      <div class="range-wrap">
+        <span class="small">輸入表顯示行數：</span>
+        <input type="range" id="rowsRange" min="1" max="10" value="10">
+        <input type="number" id="rowsCount" min="1" value="10">
+        <span class="small" id="rowsInfo"></span>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:10px">
+      <b>TWR</b>（時間加權報酬）︰依各期間的權重整合，降低大額單筆的影響，衡量「策略表現」。<br>
+      <b>MWR</b>（資金加權報酬）︰以資金流權重近端較重，反映「投資人實際體感」。<br>
+      <b>SAR</b>（穩定度調整報酬）︰以長天期報酬為主體（1Y/3Y/5Y 加權），再乘上成長一致性 <code>GC</code>。<br>
+      <b>RSI</b>（風險穩定指數）︰平均報酬 ÷ 標準差，越高代表在波動下的報酬效率越好。<br>
+      <b>MOMO</b>（綜合動能分數）︰0.4×TWRᵑ + 0.3×MWRᵑ + 0.3×GC，再依 <code>Coverage</code> 做小幅加權，越高越佳。
     </div>
   </div>
 
-  <!-- 輸入表 -->
+  <!-- 輸入表（可捲動） -->
   <div class="panel" style="margin-top:12px">
-    <div class="row" style="justify-content:space-between; align-items:center">
+    <div class="spread">
       <h3 style="margin:0;color:var(--gold-soft)">輸入資料表</h3>
-      <div class="small">欄位：基金名稱、1M、3M、6M、1Y、3Y、5Y（% 或 小數；可為負；-- / 空白會被忽略）</div>
+      <div class="small">欄位：基金名稱、3M、6M、1Y、3Y、5Y（可輸入 12 或 12%）</div>
     </div>
 
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th style="min-width:220px">基金名稱</th>
-          <th>1M</th><th>3M</th><th>6M</th><th>1Y</th><th>3Y</th><th>5Y</th>
-          <th>Coverage</th><th>GC</th><th>TWR</th><th>MWR</th><th>SAR</th><th>RSI</th><th>MOMO</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
-    <div class="ctrl">
-      <div class="row" style="align-items:center">
-        <label class="small">匯出欄位：</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="Coverage" checked> Coverage</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="GC" checked> GC</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="TWR" checked> TWR</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="MWR" checked> MWR</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="SAR" checked> SAR</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="RSI" checked> RSI</label>
-        <label class="small"><input type="checkbox" class="ex-col" value="MOMO" checked> MOMO</label>
-      </div>
-      <button id="btnExport">匯出 Excel</button>
-    </div>
-    <div id="msg" class="small" style="margin-top:6px;color:var(--warn)"></div>
-  </div>
-
-  <!-- 自動生成的「摘要表」＋ 截圖匯出 -->
-  <div class="panel" style="margin-top:12px">
-    <div class="summary-head">
-      <h3 class="summary-title">自動計算摘要表（基金名稱＋指標）</h3>
-      <div class="row">
-        <button class="secondary" id="btnRefreshSummary">更新摘要表</button>
-        <button id="btnShot">匯出摘要表截圖（PNG）</button>
-      </div>
-    </div>
-
-    <div id="summaryBox" class="summary-box">
-      <table id="summaryTable">
+    <div id="inputScroll">
+      <table id="tbl">
         <thead>
           <tr>
-            <th style="min-width:260px">基金名稱</th>
+            <th style="min-width:220px">基金名稱</th>
+            <th>3M</th><th>6M</th><th>1Y</th><th>3Y</th><th>5Y</th>
             <th>Coverage</th><th>GC</th><th>TWR</th><th>MWR</th><th>SAR</th><th>RSI</th><th>MOMO</th>
+            <th></th>
           </tr>
         </thead>
-        <tbody id="summaryBody">
-          <!-- 由 JS 依據上方輸入表自動填入 -->
-        </tbody>
+        <tbody id="tbody"></tbody>
       </table>
-      <div class="summary-note">註：摘要表顯示的是「計算後」的指標；若有修改上方數據，請先按「計算全部」，再「更新摘要表」。</div>
     </div>
+
+    <!-- 匯出欄位（同步摘要表） -->
+    <div class="export-bar">
+      <strong style="color:var(--gold-soft);font-size:13px">匯出欄位（同步摘要表）</strong>
+      <label><input type="checkbox" class="ex-col" value="Coverage" checked> Coverage</label>
+      <label><input type="checkbox" class="ex-col" value="GC" checked> GC</label>
+      <label><input type="checkbox" class="ex-col" value="TWR" checked> TWR</label>
+      <label><input type="checkbox" class="ex-col" value="MWR" checked> MWR</label>
+      <label><input type="checkbox" class="ex-col" value="SAR" checked> SAR</label>
+      <label><input type="checkbox" class="ex-col" value="RSI" checked> RSI</label>
+      <label><input type="checkbox" class="ex-col" value="MOMO" checked> MOMO</label>
+      <div style="flex:1"></div>
+      <button id="btnExport">匯出 Excel</button>
+    </div>
+
+    <div id="msg" class="small" style="margin-top:8px;color:var(--gold-soft)"></div>
+  </div>
+
+  <!-- 摘要表 -->
+  <div class="panel" style="margin-top:12px">
+    <div class="spread">
+      <h3 style="margin:0;color:var(--gold-soft)">自動摘要表（依勾選欄位顯示）</h3>
+      <button id="btnShot">匯出摘要表截圖</button>
+    </div>
+    <div id="summaryBox" class="summary-box">
+      <table id="summaryTable">
+        <thead><tr id="sumHead"></tr></thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 原始檔預覽 -->
+  <div class="panel" style="margin-top:12px">
+    <h3 style="margin:0;color:var(--gold-soft)">原始 Excel 檔預覽</h3>
+    <div id="sheetTabs" class="tabs" style="display:none"></div>
+    <div id="rawContainer" class="rawwrap"><div class="small" style="color:var(--muted)">（尚未匯入）</div></div>
+  </div>
+
+  <!-- 匯入診斷面板 -->
+  <div class="panel" style="margin-top:12px">
+    <h3 style="margin:0;color:var(--gold-soft)">匯入診斷面板（Debug）</h3>
+    <div class="kv" id="debugKV" style="margin-top:10px"></div>
   </div>
 
 </div>
 
-<footer>© MOMO 財商智庫｜雙贏策略：月配息 × 資產增值 × 穩定風報比</footer>
+<footer>© MOMO 財商智庫｜雙贏策略：月配息 × 資產增值</footer>
 
-<!-- 依賴：SheetJS for Excel, html2canvas for 截圖匯出 -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.mini.min.js"></script>
+<!-- 動態載入 XLSX：依序嘗試多個 CDN，任一成功即可 -->
+<script>
+const XLSX_URLS = [
+  "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+  "https://unpkg.com/xlsx@0.20.3/dist/xlsx.full.min.js",
+  "https://cdn.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.3/xlsx.full.min.js",
+  "https://fastly.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js",
+  "https://gcore.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js"
+];
+function loadScript(url, timeoutMs=10000){
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    let done=false;
+    const to=setTimeout(()=>{ if(done) return; done=true; s.remove(); reject(new Error("timeout")); }, timeoutMs);
+    s.src=url; s.onload=()=>{ if(done) return; done=true; clearTimeout(to); resolve(); };
+    s.onerror=()=>{ if(done) return; done=true; clearTimeout(to); reject(new Error("network/error")); };
+    document.head.appendChild(s);
+  });
+}
+async function ensureXLSX(debug){
+  if (window.XLSX) return true;
+  const errs=[];
+  for (const u of XLSX_URLS){
+    try{ await loadScript(u, 12000);
+      if (window.XLSX) return true;
+      errs.push(`${u} -> loaded but XLSX missing`);
+    }catch(e){ errs.push(`${u} -> ${e && e.message ? e.message : e}`); }
+  }
+  if (debug){ debug.error = 'XLSX is not defined\n' + errs.join('\n'); setDebug(debug); }
+  return false;
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
-/* ===== 後台固定權重 ===== */
-const TWR_WEIGHTS = [0.05, 0.10, 0.15, 0.20, 0.25, 0.25];
-const MWR_WEIGHTS = [0.30, 0.25, 0.20, 0.15, 0.10, 0.00];
+/* ===== 後台固定權重（5期） ===== */
+const TWR_WEIGHTS=[0.105263,0.157894,0.210526,0.263157,0.263157]; // 3M,6M,1Y,3Y,5Y
+const MWR_WEIGHTS=[0.357143,0.285714,0.214286,0.142857,0.0];      // 3M,6M,1Y,3Y,5Y
 
-/* ===== 工具函數 ===== */
-function parsePct(input){
-  if(input===undefined || input===null) return NaN;
-  const s = String(input).trim();
-  if(!s || s==='--') return NaN;
-  const v = s.endsWith('%') ? s.slice(0,-1) : s;
-  const num = Number(v.replace(/,/g,''));
-  if(Number.isFinite(num)){ return num>1 ? num/100 : num; }
-  return NaN;
-}
-function stdp(arr){
-  const a = arr.filter(Number.isFinite);
-  if(a.length<2) return NaN;
-  const m = a.reduce((s,v)=>s+v,0)/a.length;
-  const v = a.reduce((s,v)=>s+(v-m)*(v-m),0)/a.length;
-  return Math.sqrt(v);
-}
-function takeValidWithWeights(vals, wts){
-  const vs=[], ws=[];
-  for(let i=0;i<vals.length;i++){
-    if(Number.isFinite(vals[i]) && Number.isFinite(wts[i]) && wts[i]>0){
-      vs.push(vals[i]); ws.push(wts[i]);
-    }
-  }
-  const sum = ws.reduce((a,b)=>a+b,0);
-  const norm = sum>0 ? ws.map(x=>x/sum) : ws;
-  return {vals:vs, wts:norm};
-}
-function calcGC(vs){
-  const a = vs.filter(Number.isFinite);
-  if(a.length<2) return NaN;
-  let ok=0; for(let i=0;i<a.length-1;i++){ if(a[i] <= a[i+1]) ok++; }
-  return ok/(a.length-1);
-}
-function normalize01(x, min, max){
-  if(!Number.isFinite(x) || !Number.isFinite(min) || !Number.isFinite(max) || max<=min) return NaN;
-  return (x-min)/(max-min);
-}
+/* ===== 全域狀態 ===== */
+let currentSort = 'MOMO';     // 預設 MOMO 由高到低
+let visibleRows = 10;         // 輸入表預設顯示 10 行
 
-/* ===== 表格列操作 ===== */
+/* ===== 小工具 ===== */
+function parsePct(v){ if(v===undefined||v===null) return NaN;
+  const s=String(v).trim().replace(/％/g,'%'); if(!s||s==='--') return NaN;
+  const n=Number(s.endsWith('%')?s.slice(0,-1):s); if(!Number.isFinite(n)) return NaN;
+  return n>1?n/100:n;
+}
+function stdp(a){a=a.filter(Number.isFinite);if(a.length<2)return NaN;const m=a.reduce((s,v)=>s+v,0)/a.length;return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/a.length);}
+function calcGC(v){const a=v.filter(Number.isFinite);if(a.length<2)return NaN;let ok=0;for(let i=0;i<a.length-1;i++) if(a[i]<=a[i+1]) ok++; return ok/(a.length-1);}
+function normalize01(x,min,max){if(!Number.isFinite(x)||max<=min)return NaN;return (x-min)/(max-min);}
+function takeValid(vals,wts){const v=[],w=[];for(let i=0;i<vals.length;i++) if(Number.isFinite(vals[i])&&wts[i]>0){v.push(vals[i]);w.push(wts[i]);}const s=w.reduce((a,b)=>a+b,0);return {v,w:w.map(x=>x/s)};}
+function setLamp(state,text){const lamp=document.getElementById('lamp');lamp.className='lamp '+(state==='green'?'green':state==='amber'?'amber':'red');document.getElementById('lampText').textContent=text||'';}
+
+/* ===== DOM ===== */
 function addRow(obj={}){
-  const tbody = document.getElementById('tbody');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
+  const tb=document.getElementById('tbody'); const tr=document.createElement('tr');
+  tr.innerHTML=`
     <td><input placeholder="基金名稱" value="${obj['基金名稱']||''}"></td>
-    <td><input placeholder="1M" value="${obj['一個月']||''}"></td>
     <td><input placeholder="3M" value="${obj['三個月']||''}"></td>
     <td><input placeholder="6M" value="${obj['六個月']||''}"></td>
     <td><input placeholder="1Y" value="${obj['一年']||''}"></td>
     <td><input placeholder="3Y" value="${obj['三年']||''}"></td>
     <td><input placeholder="5Y" value="${obj['五年']||''}"></td>
-    <td class="cov"></td>
-    <td class="gc"></td>
-    <td class="twr"></td>
-    <td class="mwr"></td>
-    <td class="sar"></td>
-    <td class="rsi"></td>
-    <td class="momo"></td>
-    <td><button class="ghost btnDel">刪</button></td>
-  `;
-  tbody.appendChild(tr);
-  tr.querySelector('.btnDel').addEventListener('click', ()=>{ tr.remove(); buildSummary(); });
+    <td class="cov"></td><td class="gc"></td><td class="twr"></td><td class="mwr"></td><td class="sar"></td><td class="rsi"></td><td class="momo"></td>
+    <td><button class="ghost btnDel">刪</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelector('.btnDel').onclick=()=>{ tr.remove(); applyVisibility(); buildSummary(); };
+  updateRowsControlsMax();
 }
-
 function clearTable(){
   document.getElementById('tbody').innerHTML='';
   document.getElementById('summaryBody').innerHTML='';
+  document.getElementById('sumHead').innerHTML='';
   document.getElementById('msg').textContent='';
+  updateRowsControlsMax();
 }
 
+/* ===== 計算流程 ===== */
 function readTable(){
-  const rows = [];
-  document.querySelectorAll('#tbody tr').forEach(tr=>{
-    const tds = tr.querySelectorAll('td');
-    rows.push({
-      '基金名稱': tds[0].querySelector('input').value.trim(),
-      '一個月': tds[1].querySelector('input').value.trim(),
-      '三個月': tds[2].querySelector('input').value.trim(),
-      '六個月': tds[3].querySelector('input').value.trim(),
-      '一年':   tds[4].querySelector('input').value.trim(),
-      '三年':   tds[5].querySelector('input').value.trim(),
-      '五年':   tds[6].querySelector('input').value.trim(),
-      _tr: tr
-    });
-  });
-  return rows;
+  const rows=[]; document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const t=tr.querySelectorAll('td');
+    rows.push({'基金名稱':t[0].querySelector('input').value.trim(),'三個月':t[1].querySelector('input').value.trim(),'六個月':t[2].querySelector('input').value.trim(),'一年':t[3].querySelector('input').value.trim(),'三年':t[4].querySelector('input').value.trim(),'五年':t[5].querySelector('input').value.trim(),_tr:tr});
+  }); return rows;
 }
-
-/* ===== 計算所有列（同時觸發摘要表更新） ===== */
 function calcAll(){
-  const rows = readTable();
-  let cnt=0;
+  const rows=readTable(); let n=0;
   rows.forEach(r=>{
-    const six = [
-      parsePct(r['一個月']),
-      parsePct(r['三個月']),
-      parsePct(r['六個月']),
-      parsePct(r['一年']),
-      parsePct(r['三年']),
-      parsePct(r['五年'])
-    ];
-    const m1=six[0], m3=six[1], m6=six[2], y1=six[3], y3=six[4], y5=six[5];
+    const five=[parsePct(r['三個月']),parsePct(r['六個月']),parsePct(r['一年']),parsePct(r['三年']),parsePct(r['五年'])];
+    const c=five.filter(Number.isFinite).length, coverage=c/5, gc=calcGC(five);
+    const tw=takeValid(five,TWR_WEIGHTS), mw=takeValid(five,MWR_WEIGHTS);
+    const twr=tw.v.length?tw.v.reduce((s,v,i)=>s+v*tw.w[i],0):NaN;
+    const mwr=mw.v.length?mw.v.reduce((s,v,i)=>s+v*mw.w[i],0):NaN;
 
-    const coverageCount = six.filter(Number.isFinite).length;
-    const coverage = coverageCount/6;
+    let sarB=NaN;
+    const y1=five[2], y3=five[3], y5=five[4];
+    if(Number.isFinite(y1)&&Number.isFinite(y3)&&Number.isFinite(y5)) sarB=0.2*y1+0.4*y3+0.4*y5;
+    else if(Number.isFinite(y1)&&Number.isFinite(y3)) sarB=0.3*y1+0.7*y3;
+    else if(Number.isFinite(y1)) sarB=y1;
+    const sar=(Number.isFinite(sarB)&&Number.isFinite(gc))?sarB*gc:NaN;
 
-    const gc = calcGC(six);
+    const avg = c? five.filter(Number.isFinite).reduce((a,b)=>a+b,0)/c : NaN;
+    const std = stdp(five);
+    const rsi = (Number.isFinite(avg)&&Number.isFinite(std)&&std>0)? avg/std : NaN;
 
-    const {vals:tv, wts:tw} = takeValidWithWeights(six, TWR_WEIGHTS);
-    const {vals:mv, wts:mw} = takeValidWithWeights(six, MWR_WEIGHTS);
-    const twr = tv.length ? tv.reduce((s,v,i)=>s+v*tw[i],0) : NaN;
-    const mwr = mv.length ? mv.reduce((s,v,i)=>s+v*mw[i],0) : NaN;
+    const twrN=normalize01(twr,-0.5,0.5), mwrN=normalize01(mwr,-0.5,0.5);
+    const momoRaw=(0.4*twrN + 0.3*mwrN + 0.3*(Number.isFinite(gc)?gc:0)) * 100;
+    const momoAdj=momoRaw*(0.85+0.15*coverage);
 
-    // SAR fallback
-    let sarBase = NaN;
-    if(Number.isFinite(y1) && Number.isFinite(y3) && Number.isFinite(y5)){
-      sarBase = 0.2*y1 + 0.4*y3 + 0.4*y5;
-    }else if(Number.isFinite(y1) && Number.isFinite(y3)){
-      sarBase = 0.3*y1 + 0.7*y3;
-    }else if(Number.isFinite(y1)){
-      sarBase = y1;
-    }
-    const sar = (Number.isFinite(sarBase) && Number.isFinite(gc)) ? sarBase*gc : NaN;
-
-    const meanSix = six.filter(Number.isFinite);
-    const avgSix = meanSix.length ? meanSix.reduce((a,b)=>a+b,0)/meanSix.length : NaN;
-    const stdSix = stdp(six);
-    const rsi = (Number.isFinite(avgSix) && Number.isFinite(stdSix) && stdSix>0) ? avgSix/stdSix : NaN;
-
-    // MOMO（正規化 + Coverage）
-    const twrN = Number.isFinite(twr) ? normalize01(twr, -0.5, 0.5) : NaN;
-    const mwrN = Number.isFinite(mwr) ? normalize01(mwr, -0.5, 0.5) : NaN;
-    const gcN  = Number.isFinite(gc)  ? gc : NaN;
-    const momoRaw = (Number.isFinite(twrN) && Number.isFinite(mwrN) && Number.isFinite(gcN))
-      ? (0.4*twrN + 0.3*mwrN + 0.3*gcN) * 100
-      : NaN;
-    const momoAdj = Number.isFinite(momoRaw) ? momoRaw * (0.85 + 0.15 * coverage) : NaN;
-
-    // 寫回輸入表
-    const tds = r._tr.querySelectorAll('td');
-    tds[7].textContent  = `${coverageCount}/6`;
-    tds[8].textContent  = Number.isFinite(gc)? gc.toFixed(2) : '';
-    tds[9].textContent  = Number.isFinite(twr)? (twr*100).toFixed(2)+'%' : '';
-    tds[10].textContent = Number.isFinite(mwr)? (mwr*100).toFixed(2)+'%' : '';
-    tds[11].textContent = Number.isFinite(sar)? (sar*100).toFixed(2)+'%' : '';
-    tds[12].textContent = Number.isFinite(rsi)? rsi.toFixed(3) : '';
-    tds[13].textContent = Number.isFinite(momoAdj)? momoAdj.toFixed(1) : '';
-    cnt++;
+    const tds=r._tr.querySelectorAll('td');
+    tds[6].textContent=`${c}/5`;
+    tds[7].textContent=Number.isFinite(gc)?gc.toFixed(2):'';
+    tds[8].textContent=Number.isFinite(twr)?(twr*100).toFixed(2)+'%':'';
+    tds[9].textContent=Number.isFinite(mwr)?(mwr*100).toFixed(2)+'%':'';
+    tds[10].textContent=Number.isFinite(sar)?(sar*100).toFixed(2)+'%':'';
+    tds[11].textContent=Number.isFinite(rsi)?rsi.toFixed(3):'';
+    tds[12].textContent=Number.isFinite(momoAdj)?momoAdj.toFixed(1):'';
+    n++;
   });
-
-  document.getElementById('msg').textContent = `已完成計算：${cnt} 筆（未填值自動忽略並正規化權重；MOMO 已做 Coverage 調整）`;
-
-  // 計算完自動刷新摘要表
+  document.getElementById('msg').textContent=`共計算 ${n} 筆。`;
+  sortRowsByMetric(currentSort);
+  applyVisibility();
   buildSummary();
+  setLamp(n>0?'green':'red', n>0?`已匯入/計算：${n} 筆`:'未匯入');
 }
 
-/* ===== 生成摘要表（基金名稱 + 指標） ===== */
+/* ===== 排序 ===== */
+const metricIndex = { TWR:8, MWR:9, SAR:10, RSI:11, MOMO:12 };
+function parseCellValue(td, metric){
+  const s=(td.textContent||'').trim();
+  if(!s) return -Infinity;
+  if(metric==='RSI') return Number(s);
+  return Number(s.replace('%',''));
+}
+function sortRowsByMetric(metric){
+  currentSort = metric;
+  const tb=document.getElementById('tbody');
+  const rows=Array.from(tb.querySelectorAll('tr'));
+  const idx = metricIndex[metric] || 12;
+  rows.sort((a,b)=>{
+    const va=parseCellValue(a.querySelectorAll('td')[idx], metric);
+    const vb=parseCellValue(b.querySelectorAll('td')[idx], metric);
+    return (vb - va);
+  });
+  rows.forEach(r=>tb.appendChild(r));
+  document.querySelectorAll('#sortGroup .chip').forEach(c=>{
+    c.classList.toggle('active', c.dataset.m===metric);
+  });
+}
+
+/* ===== 可視行數（輸入表專用） ===== */
+function updateRowsControlsMax(){
+  const total = document.querySelectorAll('#tbody tr').length || 1;
+  const range = document.getElementById('rowsRange');
+  const num   = document.getElementById('rowsCount');
+  range.max = Math.max(1,total);
+  num.max   = Math.max(1,total);
+  visibleRows = Math.min(Math.max(1, visibleRows), total);
+  range.value = visibleRows;
+  num.value   = visibleRows;
+  document.getElementById('rowsInfo').textContent = `(共 ${total} 筆；顯示 ${visibleRows} 行)`;
+}
+function applyVisibility(){
+  const trs = document.querySelectorAll('#tbody tr');
+  trs.forEach((tr,i)=> tr.style.display = (i<visibleRows)?'':'none');
+  updateRowsControlsMax();
+}
+
+/* ===== 摘要表（跟勾選欄位同步） ===== */
+function getCheckedCols(){ return Array.from(document.querySelectorAll('.ex-col:checked')).map(x=>x.value); }
 function buildSummary(){
-  const tbody = document.getElementById('summaryBody');
-  tbody.innerHTML = '';
+  const cols=getCheckedCols();
+  const head=document.getElementById('sumHead'); const body=document.getElementById('summaryBody');
+  head.innerHTML=''; body.innerHTML='';
+  const thName=document.createElement('th'); thName.textContent='基金名稱'; thName.style.minWidth='240px'; thName.style.textAlign='left'; head.appendChild(thName);
+  const mapIdx={Coverage:6, GC:7, TWR:8, MWR:9, SAR:10, RSI:11, MOMO:12};
+  cols.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; head.appendChild(th); });
   document.querySelectorAll('#tbody tr').forEach(tr=>{
-    const tds = tr.querySelectorAll('td');
-    const name = tds[0].querySelector('input').value.trim();
-    if(!name) return; // 沒填名稱不列入摘要
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td style="text-align:left">${name}</td>
-      <td>${tds[7].textContent||''}</td>
-      <td>${tds[8].textContent||''}</td>
-      <td>${tds[9].textContent||''}</td>
-      <td>${tds[10].textContent||''}</td>
-      <td>${tds[11].textContent||''}</td>
-      <td>${tds[12].textContent||''}</td>
-      <td>${tds[13].textContent||''}</td>
-    `;
-    tbody.appendChild(row);
+    const name=tr.querySelector('td:nth-child(1) input').value.trim(); if(!name) return;
+    const tds=tr.querySelectorAll('td'); const trSum=document.createElement('tr');
+    const tdName=document.createElement('td'); tdName.style.textAlign='left'; tdName.textContent=name; trSum.appendChild(tdName);
+    cols.forEach(c=>{ const td=document.createElement('td'); td.textContent=tds[mapIdx[c]].textContent||''; trSum.appendChild(td); });
+    body.appendChild(trSum);
   });
 }
 
-/* ===== 匯出 Excel（只輸出勾選指標） ===== */
+/* ===== 匯出 Excel（只輸出勾選欄位） ===== */
 function exportExcel(){
-  const colsChecked = Array.from(document.querySelectorAll('.ex-col:checked')).map(x=>x.value);
-  const rows = readTable();
-  const data = [];
-  const header = ["基金名稱","1M","3M","6M","1Y","3Y","5Y"].concat(colsChecked);
-  data.push(header);
-  rows.forEach(r=>{
-    const tr = r._tr; const tds = tr.querySelectorAll('td');
-    const row = [ r['基金名稱'], r['一個月'], r['三個月'], r['六個月'], r['一年'], r['三年'], r['五年'] ];
-    const mapIdx = {Coverage:7, GC:8, TWR:9, MWR:10, SAR:11, RSI:12, MOMO:13};
-    colsChecked.forEach(c=>row.push(tds[mapIdx[c]].textContent || ''));
-    data.push(row);
+  if (!window.XLSX){ alert('XLSX 未載入，無法匯出。'); return; }
+  const cols=getCheckedCols();
+  const header=["基金名稱","3M","6M","1Y","3Y","5Y"].concat(cols);
+  const mapIdx={Coverage:6, GC:7, TWR:8, MWR:9, SAR:10, RSI:11, MOMO:12};
+  const data=[header];
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const t=tr.querySelectorAll('td');
+    const row=[t[0].querySelector('input').value.trim(), t[1].querySelector('input').value.trim(), t[2].querySelector('input').value.trim(), t[3].querySelector('input').value.trim(), t[4].querySelector('input').value.trim(), t[5].querySelector('input').value.trim()];
+    cols.forEach(c=>row.push(t[mapIdx[c]].textContent||'')); data.push(row);
   });
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "CP值分析");
-  XLSX.writeFile(wb, "FundMetricPro_Export.xlsx");
+  const ws=XLSX.utils.aoa_to_sheet(data); const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "CP值分析"); XLSX.writeFile(wb, "FundMetricPro_Export.xlsx");
 }
 
-/* ===== 匯入 Excel/CSV ===== */
-function importFile(file){
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    const data = new Uint8Array(e.target.result);
-    const wb = XLSX.read(data, {type:'array'});
-    const wsname = wb.SheetNames[0];
-    const ws = wb.Sheets[wsname];
-    const json = XLSX.utils.sheet_to_json(ws, {defval:""});
-    const map = {
-      name: ["基金名稱","基金","name","fund","Fund","名稱"],
-      m1: ["一個月","1M","M1","近1個月","近一個月"],
-      m3: ["三個月","3M","M3","近3個月"],
-      m6: ["六個月","6M","M6","近6個月"],
-      y1: ["一年","1Y","Y1","近1年","近一年"],
-      y3: ["三年","3Y","Y3","近3年"],
-      y5: ["五年","5Y","Y5","近5年"]
-    };
-    function pick(obj, keys){
-      for(const k of keys){ if(obj[k]!==undefined) return obj[k]; }
-      return "";
-    }
-    clearTable();
-    json.forEach(r=>{
-      addRow({
-        "基金名稱": pick(r, map.name),
-        "一個月":   pick(r, map.m1),
-        "三個月":   pick(r, map.m3),
-        "六個月":   pick(r, map.m6),
-        "一年":     pick(r, map.y1),
-        "三年":     pick(r, map.y3),
-        "五年":     pick(r, map.y5),
-      });
-    });
-    document.getElementById('msg').textContent = `已匯入 ${json.length} 筆，請按「計算全部」。`;
+/* ===== 匯入流程（含預覽 + 診斷） ===== */
+async function importFile(file){
+  const debug = { fileName:file?.name, fileSize:file?.size, fileType:file?.type, mode:'', sheet:'', sheets:[], headerRaw:[], headerNorm:[], mapResult:{}, rowCount:0, sample:[], error:'' };
+  setLamp('amber','讀取中…');
+  const ok = await ensureXLSX(debug);
+  if(!ok){ setLamp('red','未匯入（XLSX 下載失敗）'); document.getElementById('msg').textContent='匯入失敗：無法載入 XLSX。'; return; }
+
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const sheets = wb.SheetNames.slice();
+      const first  = wb.SheetNames[0] || '';
+      debug.sheets = sheets; debug.sheet = first;
+
+      renderWorkbookPreview(wb);
+
+      const ws=wb.Sheets[first];
+      let json=XLSX.utils.sheet_to_json(ws,{defval:"",raw:false});
+      const rowsObj = mapJsonRows(json, debug);
+      debug.mode='object';
+      if(rowsObj.length===0){
+        const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false});
+        const rowsArr = mapArrayRows(arr, debug);
+        debug.mode='array';
+        if(rowsArr.length===0){
+          debug.error='找不到可辨識的欄位或內容為空';
+          setDebug(debug); setLamp('red','未匯入'); document.getElementById('msg').textContent='匯入失敗：表頭不符或內容為空。'; return;
+        }else{ clearTable(); rowsArr.forEach(r=>addRow(r)); debug.rowCount=rowsArr.length; debug.sample=rowsArr.slice(0,5); }
+      }else{ clearTable(); rowsObj.forEach(r=>addRow(r)); debug.rowCount=rowsObj.length; debug.sample=rowsObj.slice(0,5); }
+
+      calcAll();
+      setLamp('green',`已匯入 ${debug.rowCount} 筆`);
+      document.getElementById('msg').textContent=`已匯入 ${debug.rowCount} 筆，自動計算完成。`;
+    }catch(err){
+      debug.error = String(err && err.message ? err.message : err);
+      setLamp('red','未匯入（解析錯誤）');
+      document.getElementById('msg').textContent='匯入失敗：檔案內容或格式無法解析。';
+    }finally{ setDebug(debug); }
   };
   reader.readAsArrayBuffer(file);
 }
 
-/* ===== 範本下載 ===== */
-function downloadTemplate(){
-  const data = [
-    ["基金名稱","一個月","三個月","六個月","一年","三年","五年"],
-    ["（輸入範例）安聯台灣科技基金","3.5%","8.2%","12.4%","18.0%","45%","68%"]
-  ];
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Template");
-  XLSX.writeFile(wb, "FundMetricPro_Template.xlsx");
+/* —— 原始檔預覽 —— */
+function renderWorkbookPreview(wb){
+  const tabs = document.getElementById('sheetTabs');
+  const box  = document.getElementById('rawContainer');
+  tabs.innerHTML=''; box.innerHTML='';
+  if(!wb || !wb.SheetNames || wb.SheetNames.length===0){
+    tabs.style.display='none';
+    box.innerHTML='<div class="small" style="color:#c9ceda">（檔案沒有工作表可預覽）</div>';
+    return;
+  }
+  tabs.style.display='flex';
+  wb.SheetNames.forEach((name,idx)=>{
+    const b=document.createElement('button'); b.className='tab'+(idx===0?' active':''); b.textContent=name;
+    b.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); b.classList.add('active');
+      const html = XLSX.utils.sheet_to_html(wb.Sheets[name],{editable:false});
+      const tbl = html.match(/<table[\s\S]*<\/table>/i);
+      box.innerHTML = tbl? tbl[0] : '<div class="small" style="color:#c9ceda">（此工作表無法預覽）</div>';
+    };
+    tabs.appendChild(b);
+  });
+  tabs.querySelector('.tab').click();
 }
 
-/* ===== 截圖匯出（摘要表） ===== */
+/* —— 欄名映射：物件模式 —— */
+function mapJsonRows(json, debug){
+  const norm=s=>String(s||"").replace(/\s+/g,"").replace(/％/g,"%").replace(/%/g,"").toLowerCase();
+  const keyMap={
+    name:["基金名稱","名稱","fund","name","基金"],
+    y1:["近1年","近一年","1y","一年","近1年%"],
+    y3:["近3年累積","近三年累積","三年累積","3y","近3年","三年","近3年累積%"],
+    y5:["近5年累積","近五年累積","五年累積","5y","近5年","五年","近5年累積%"],
+    m3:["近3月","近三月","三個月","近3個月","3m","近3月%","近3月累積%"],
+    m6:["近6月累積","近六月累積","六個月","近6個月","6m","近6月累積%","近6月%"]
+  };
+  const lookup={}; for(const k in keyMap){ keyMap[k].forEach(a=>lookup[norm(a)]=k); }
+
+  const headers = json.length ? Object.keys(json[0]) : [];
+  if (debug){ debug.headerRaw = headers.slice(); debug.headerNorm = headers.map(h=>norm(h)); debug.mapResult = lookup; }
+
+  const rows=json.map(r=>{
+    const tmp={}; Object.keys(r).forEach(c=>{ const k=lookup[norm(c)]; if(k) tmp[k]=r[c]; });
+    return {"基金名稱":tmp.name||"","三個月":tmp.m3||"","六個月":tmp.m6||"","一年":tmp.y1||"","三年":tmp.y3||"","五年":tmp.y5||""};
+  }).filter(r=>r["基金名稱"]||["三個月","六個月","一年","三年","五年"].some(k=>String(r[k]).trim()!==""));
+  return rows;
+}
+
+/* —— 陣列模式 —— */
+function mapArrayRows(arr, debug){
+  if(!arr || arr.length<2) return [];
+  const header=arr[0].map(h=>String(h||""));
+  const norm=s=>s.replace(/\s+/g,"").replace(/％/g,"%").replace(/%/g,"").toLowerCase();
+  if (debug){ debug.headerRaw = header.slice(); debug.headerNorm = header.map(h=>norm(h)); }
+  const idx = {
+    name: header.findIndex(h=>["基金名稱","名稱","fund","name","基金"].map(norm).includes(norm(h))),
+    y1:   header.findIndex(h=>["近1年","近一年","1y","一年","近1年%"].map(norm).includes(norm(h))),
+    y3:   header.findIndex(h=>["近3年累積","近三年累積","三年累積","3y","近3年","三年","近3年累積%"].map(norm).includes(norm(h))),
+    y5:   header.findIndex(h=>["近5年累積","近五年累積","五年累積","5y","近5年","五年","近5年累積%"].map(norm).includes(norm(h))),
+    m3:   header.findIndex(h=>["近3月","近三月","三個月","近3個月","3m","近3月%","近3月累積%"].map(norm).includes(norm(h))),
+    m6:   header.findIndex(h=>["近6月累積","近六月累積","六個月","近6個月","6m","近6月累積%","近6月%"].map(norm).includes(norm(h)))
+  };
+  const rows=[];
+  for(let i=1;i<arr.length;i++){
+    const row=arr[i]||[];
+    const rec={
+      "基金名稱": idx.name>=0? row[idx.name] :"",
+      "三個月":   idx.m3>=0? row[idx.m3] :"",
+      "六個月":   idx.m6>=0? row[idx.m6] :"",
+      "一年":     idx.y1>=0? row[idx.y1] :"",
+      "三年":     idx.y3>=0? row[idx.y3] :"",
+      "五年":     idx.y5>=0? row[idx.y5] :""
+    };
+    const hasValues = ["三個月","六個月","一年","三年","五年"].some(k => String(rec[k]||"").trim()!=="");
+    const keep = String(rec["基金名稱"]||"").trim()!=="" || hasValues;
+    if(keep) rows.push(rec);
+  }
+  return rows;
+}
+
+/* ===== 診斷面板渲染 ===== */
+function setDebug(d){
+  const kv=document.getElementById('debugKV');
+  const fmtSize = s => (s==null)?'': (s>1e6? (s/1e6).toFixed(2)+' MB' : s>1e3? (s/1e3).toFixed(1)+' KB' : s+' B');
+  const stringify = v => typeof v==='string'? v : JSON.stringify(v, null, 2);
+  kv.innerHTML = `
+    <b>檔名</b><div>${d.fileName||''}</div>
+    <b>大小 / 類型</b><div>${fmtSize(d.fileSize)} / ${d.fileType||''}</div>
+    <b>工作表</b><div>${Array.isArray(d.sheets)? d.sheets.join(' , ') : ''}</div>
+    <b>使用工作表</b><div>${d.sheet||''}</div>
+    <b>解析模式</b><div>${d.mode||''}</div>
+    <b>原始表頭</b><div class="pre">${(d.headerRaw||[]).join(' | ')}</div>
+    <b>正規化表頭</b><div class="pre">${(d.headerNorm||[]).join(' | ')}</div>
+    <b>欄位對應（部分）</b><div class="pre">${stringify(d.mapResult||{})}</div>
+    <b>資料列數</b><div>${d.rowCount||0}</div>
+    <b>前 5 列預覽</b><div class="pre">${stringify(d.sample||[])}</div>
+    <b>錯誤訊息</b><div class="pre" style="color:#ffbfbf">${d.error||''}</div>
+  `;
+}
+
+/* ===== 截圖 ===== */
 function shotSummary(){
-  const box = document.getElementById('summaryBox');
-  // 讓背景更純以避免壓縮噪點（可選）
-  box.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
-  html2canvas(box, {backgroundColor: '#0A1221', scale: 2}).then(canvas=>{
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = `FundMetricPro_Summary_${new Date().toISOString().slice(0,10)}.png`;
-    a.click();
+  html2canvas(document.getElementById('summaryBox'),{backgroundColor:'#0A1221',scale:2}).then(c=>{
+    const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=`FundMetricPro_Summary_${new Date().toISOString().slice(0,10)}.png`; a.click();
   });
 }
 
-/* ===== 綁定事件 ===== */
-document.getElementById('btnAdd').addEventListener('click', ()=>addRow({}));
-document.getElementById('btnClear').addEventListener('click', ()=>{ clearTable(); });
-document.getElementById('btnCalc').addEventListener('click', calcAll);
-document.getElementById('btnExport').addEventListener('click', exportExcel);
-document.getElementById('btnTemplate').addEventListener('click', downloadTemplate);
-document.getElementById('btnImport').addEventListener('click', ()=>document.getElementById('fileInput').click());
-document.getElementById('fileInput').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) importFile(f); });
-document.getElementById('btnShot').addEventListener('click', shotSummary);
-document.getElementById('btnRefreshSummary').addEventListener('click', buildSummary);
+/* ===== 事件 ===== */
+document.getElementById('btnAdd').onclick=()=>{ addRow({}); setLamp('amber','手動輸入中'); applyVisibility(); };
+document.getElementById('btnClear').onclick=()=>{
+  clearTable(); document.getElementById('fileInput').value='';
+  setLamp('red','未匯入');
+  document.getElementById('sheetTabs').innerHTML=''; document.getElementById('sheetTabs').style.display='none';
+  document.getElementById('rawContainer').innerHTML='<div class="small" style="color:#c9ceda">（尚未匯入）</div>';
+  setDebug({fileName:'',fileSize:'',fileType:'',mode:'',sheet:'',sheets:[],headerRaw:[],headerNorm:[],mapResult:{},rowCount:0,sample:[],error:''});
+  applyVisibility();
+};
+document.getElementById('btnCalc').onclick=calcAll;
+document.getElementById('btnExport').onclick=exportExcel;
+document.getElementById('btnShot').onclick=shotSummary;
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange=e=>{const f=e.target.files[0]; if(f) importFile(f);};
+document.querySelectorAll('.ex-col').forEach(cb=>cb.addEventListener('change',buildSummary));
 
-/* 預設放一列方便操作 */
+document.getElementById('sortGroup').addEventListener('click',e=>{
+  const btn=e.target.closest('.chip'); if(!btn) return;
+  const m=btn.dataset.m; if(!m) return;
+  sortRowsByMetric(m); applyVisibility(); buildSummary();
+});
+
+/* 行數拉霸/數字同步 */
+function setVisibleRows(n){ visibleRows = Math.max(1, parseInt(n||10,10)); applyVisibility(); }
+document.getElementById('rowsRange').addEventListener('input',e=>{
+  document.getElementById('rowsCount').value = e.target.value; setVisibleRows(e.target.value);
+});
+document.getElementById('rowsCount').addEventListener('input',e=>{
+  document.getElementById('rowsRange').value = e.target.value; setVisibleRows(e.target.value);
+});
+
+/* 初始 */
 addRow({});
+setLamp('red','未匯入');
+setVisibleRows(10);
+setDebug({fileName:'',fileSize:'',fileType:'',mode:'',sheet:'',sheets:[],headerRaw:[],headerNorm:[],mapResult:{},rowCount:0,sample:[],error:''});
 </script>
 </body>
 </html>
