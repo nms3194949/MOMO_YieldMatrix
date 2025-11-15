@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>FundMetric Pro｜Optimizer (Rows Select)</title>
+<title>MOMO批量基金速選</title>
 <meta name="theme-color" content="#0A1221" />
 <style>
 :root{
@@ -55,7 +55,7 @@ td input:focus{border-color:var(--gold-soft)}
   border:1px dashed var(--line); 
   border-radius:12px; 
   padding:2px;
-  scrollbar-gutter: stable; /* 捲動時不跳動 */
+  scrollbar-gutter: stable;
 }
 #tbl thead th{position:sticky; top:0; background:#0C152A; z-index:1}
 
@@ -97,7 +97,7 @@ td input:focus{border-color:var(--gold-soft)}
     <div class="small" style="margin-top:8px;color:var(--muted)">輸入表預設顯示 <b>10</b> 行，可改 5/10/15/20/全部。</div>
   </div>
 
-  <!-- 排序 + 行數（下拉） + 篩選 + 顯示選項 -->
+  <!-- 排序 + 行數 + 篩選 -->
   <div class="panel" style="margin-top:12px">
     <div class="controls">
       <div class="sort-group" id="sortGroup" aria-label="排序">
@@ -147,7 +147,7 @@ td input:focus{border-color:var(--gold-soft)}
   <div class="panel" style="margin-top:12px">
     <div class="spread">
       <h3 style="margin:0;color:var(--gold-soft)">輸入資料表</h3>
-      <div class="small">欄位：基金名稱、3M、6M、1Y、3Y、5Y（顯示規則：匯入有 % 維持；無 % → 倍乘 100 + %）</div>
+      <div class="small">欄位：基金名稱、3M、6M、1Y、3Y、5Y（顯示規則：一律視為「%」，計算用小數）。</div>
     </div>
 
     <div id="inputScroll">
@@ -252,25 +252,33 @@ let rowSeq = 0;
 
 /* ========= 欄位別名 ========= */
 const ALIASES = {
-  name:["基金名稱","名稱","fund","name","基金"],
-  m3:["近3月","近三月","三個月","近3個月","3m","近3月%","近3月累積%"],
-  m6:["近6月累積","近六月累積","六個月","近6個月","6m","近6月累積%","近6月%"],
-  y1:["近1年","近一年","1y","一年","近1年%"],
-  y3:["近3年累積","近三年累積","三年累積","3y","近3年","三年","近3年累積%"],
-  y5:["近5年累積","近五年累積","五年累積","5y","近5年","五年","近5年累積%"]
+  name:["基金名稱","名稱","fund","name","基金","標的名稱"],
+  m3:["近3月","近三月","三個月","近3個月","3m","3M","近3月%","近3月累積%","三個月％","三個月%","三個月％"],
+  m6:["近6月累積","近六月累積","六個月","近6個月","6m","6M","近6月累積%","近6月%","六個月％","六個月%"],
+  y1:["近1年","近一年","1y","1Y","一年","近1年%","一年％","一年%"],
+  y3:["近3年累積","近三年累積","三年累積","3y","3Y","近3年","三年","近3年累積%","三年％","三年%"],
+  y5:["近5年累積","近五年累積","五年累積","5y","5Y","近5年","五年","近5年累積%","五年％","五年%"]
 };
-const norm = s=> String(s||"").replace(/\s+/g,"").replace(/％/g,"%").replace(/%/g,"").toLowerCase();
+const norm = s=> String(s||"").replace(/\s+/g,"").replace(/％/g,"%").toLowerCase();
 
-/* ========= 解析與顯示工具 ========= */
-// 小工具：是否含百分比符號
-function hasPercent(s){ return typeof s === 'string' ? (s.includes('%') || s.includes('％')) : false; }
-// 小工具：標準化帶 % 的顯示（固定小數位）
-function normalizePercentText(s, dp=2){
-  const n = Number(String(s).replace(/[％%]/g,'').trim());
-  if (!Number.isFinite(n)) return '';
-  return n.toFixed(dp) + '%';
+/* ========= 匯入數值專用：一律視為「百分點」 ========= */
+/* 例如：14.8 / 14.80% / "14.8" / "14.80%" → 0.148 */
+function importToDecimal(v){
+  if(v===undefined || v===null) return NaN;
+  let s = String(v).trim();
+  if(!s) return NaN;
+  s = s.replace(/％/g,'%');
+  let n;
+  if(s.includes('%')){
+    n = Number(s.replace('%',''));
+  }else{
+    n = Number(s);
+  }
+  if(!Number.isFinite(n)) return NaN;
+  return n/100;
 }
-// 將使用者輸入字串解讀成「小數比例」：12 或 12% -> 0.12；0.12 -> 0.12
+
+/* ========= 手動輸入解析：保留原本邏輯 ========= */
 function parseUserEntryToDecimal(v){
   if(v===undefined||v===null) return NaN;
   let s=String(v).trim();
@@ -282,27 +290,25 @@ function parseUserEntryToDecimal(v){
   }
   const n = Number(s);
   if(!Number.isFinite(n)) return NaN;
-  // 無 %：<=1 視為小數；>1 視為百分比
+  // 無 %：<=1 視為小數；>1 視為百分點
   return Math.abs(n) <= 1 ? n : n/100;
 }
-// 顯示：用 raw 小數（0.12）→ 12.00%
+// 顯示：小數 → 12.34%
 function toPercentDisplay(v, dp=2){
   if(v===undefined||v===null) return '';
   const n = Number(v);
   if(!Number.isFinite(n)) return '';
   return (n*100).toFixed(dp) + '%';
 }
-// 標準差（母體）
+
 function stdp(a){a=a.filter(Number.isFinite);if(a.length<2)return NaN;const m=a.reduce((s,v)=>s+v,0)/a.length;return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/a.length);}
-// GC 一致性：非遞減比例
 function calcGC(v){const a=v.filter(Number.isFinite);if(a.length<2)return NaN;let ok=0;for(let i=0;i<a.length-1;i++) if(a[i]<=a[i+1]) ok++; return ok/(a.length-1);}
-// [0,1] 正規化
 function normalize01(x,min,max){if(!Number.isFinite(x)||max<=min)return NaN;return (x-min)/(max-min);}
 function takeValid(vals,wts){const v=[],w=[];for(let i=0;i<vals.length;i++) if(Number.isFinite(vals[i])&&wts[i]>0){v.push(vals[i]);w.push(wts[i]);}const s=w.reduce((a,b)=>a+b,0)||1;return {v,w:w.map(x=>x/s)};}
 function setLamp(state,text){const lamp=document.getElementById('lamp');lamp.className='lamp '+(state==='green'?'green':state==='amber'?'amber':'red');document.getElementById('lampText').textContent=text||'';}
 function debounce(fn,ms){let t;return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),ms);}}
 
-/* ========= 指標集中計算（吃 raw 小數） ========= */
+/* ========= 指標計算 ========= */
 function computeMetrics(rec){
   const arr=[rec['三個月'],rec['六個月'],rec['一年'],rec['三年'],rec['五年']].map(x=>Number(x));
   const cov = arr.filter(Number.isFinite).length/5;
@@ -331,8 +337,9 @@ function computeMetrics(rec){
   return {cov,gc,twr,mwr,sar,rsi,momo};
 }
 
-/* ========= DOM 產生（含匯入顯示規則） ========= */
-function makeRowEl(obj={}, opts={strictImport:false}){
+/* ========= DOM 產生 ========= */
+function makeRowEl(obj={}, opts={}){
+  const fromImport = !!opts.fromImport;
   const tr=document.createElement('tr');
   tr.dataset.idx = (++rowSeq).toString();
   tr.innerHTML=`
@@ -344,29 +351,25 @@ function makeRowEl(obj={}, opts={strictImport:false}){
     <td><input placeholder="5Y"></td>
     <td class="cov"></td><td class="gc"></td><td class="twr"></td><td class="mwr"></td><td class="sar"></td><td class="rsi"></td><td class="momo"></td>
     <td><button class="ghost btnDel" aria-label="刪除此列">刪</button></td>`;
-
   const fields=['三個月','六個月','一年','三年','五年'];
   for(let i=0;i<fields.length;i++){
     const val = obj[fields[i]];
     if(val!==undefined && val!==''){
       const inp = tr.querySelectorAll('td')[i+1].querySelector('input');
-      const raw = parseUserEntryToDecimal(val); // 小數比例（計算用）
-      if(Number.isFinite(raw)){ 
-        inp.dataset.raw = String(raw);
-        if (opts.strictImport){
-          // 匯入顯示規則：原本有 % → 維持；無 % → 原值 ×100 + %
-          if (hasPercent(String(val))){
-            inp.value = normalizePercentText(String(val));
-          }else{
-            const num = Number(String(val).trim());
-            inp.value = Number.isFinite(num) ? (num*100).toFixed(2) + '%' : toPercentDisplay(raw);
-          }
-        }else{
-          // 手動新增列的預設呈現：以 raw 顯示
+      if(fromImport){
+        const raw = Number(val);
+        if(Number.isFinite(raw)){
+          inp.dataset.raw = String(raw);
           inp.value = toPercentDisplay(raw);
         }
       }else{
-        inp.value = String(val);
+        const raw = parseUserEntryToDecimal(val);
+        if(Number.isFinite(raw)){
+          inp.dataset.raw = String(raw);
+          inp.value = toPercentDisplay(raw);
+        }else{
+          inp.value = String(val);
+        }
       }
     }
   }
@@ -374,7 +377,7 @@ function makeRowEl(obj={}, opts={strictImport:false}){
 }
 function addRow(obj={}){ document.getElementById('tbody').appendChild(makeRowEl(obj)); updateRowsInfo(); }
 
-/* ========= 讀表格（取 raw 小數） ========= */
+/* ========= 讀表格 ========= */
 function readTable(){
   const rows=[]; document.querySelectorAll('#tbody tr').forEach(tr=>{
     const t=tr.querySelectorAll('td');
@@ -383,7 +386,6 @@ function readTable(){
       if(!inp) return NaN;
       const raw = Number(inp.dataset.raw);
       if(Number.isFinite(raw)) return raw;
-      // 若沒有 raw，現場解析一次
       const parsed = parseUserEntryToDecimal(inp.value);
       if(Number.isFinite(parsed)){ inp.dataset.raw = String(parsed); return parsed; }
       return NaN;
@@ -448,7 +450,7 @@ function sortRowsByMetric(metric){
   const key = metricKey[metric] || "momo";
   rows.sort((a,b)=>{
     const va=getMetricValue(a,key), vb=getMetricValue(b,key);
-    if(vb!==va) return vb-va; // 高→低
+    if(vb!==va) return vb-va;
     return Number(a.dataset.idx)-Number(b.dataset.idx);
   });
   const frag=document.createDocumentFragment();
@@ -458,7 +460,7 @@ function sortRowsByMetric(metric){
   saveUI();
 }
 
-/* ========= 顯示行數（下拉）＋篩選＋滾動 ========= */
+/* ========= 顯示行數 + 篩選 ========= */
 function updateRowsInfo(){
   const total = document.querySelectorAll('#tbody tr').length || 0;
   const selVal = document.getElementById('rowsSelect').value;
@@ -470,14 +472,12 @@ function applyVisibility(){
   const keyword = (document.getElementById('filterName').value||'').trim().toLowerCase();
   const onlyComputed = document.getElementById('chkComputed').checked;
   const trs = Array.from(document.querySelectorAll('#tbody tr'));
-  // 先依條件過濾
   let filtered = trs.filter(tr=>{
     const name = tr.querySelector('td:first-child input').value.trim().toLowerCase();
     if(keyword && !name.includes(keyword)) return false;
     if(onlyComputed && !Number.isFinite(Number(tr.dataset.momo))) return false;
     return true;
   });
-  // 顯示行數
   trs.forEach(tr=>tr.classList.add('hidden-row'));
   const limit = (visibleRows==='all') ? filtered.length : visibleRows;
   filtered.slice(0, limit).forEach(tr=>tr.classList.remove('hidden-row'));
@@ -545,7 +545,110 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb, ws, "CP值分析"); XLSX.writeFile(wb, "FundMetricPro_Export.xlsx");
 }
 
-/* ========= 匯入（嚴格顯示規則） ========= */
+/* ========= 解析 xlsx 表頭（支援兩列 header） ========= */
+function buildHeaderFromArray(arr){
+  if(!arr || arr.length<2) return {header:(arr[0]||[]).map(h=>String(h||"")), startRow:1};
+  const row0=(arr[0]||[]).map(h=>String(h||""));
+  const row1=(arr[1]||[]).map(h=>String(h||""));
+  const normRow1=row1.map(norm);
+  let hasMetric=false;
+  for(const key of ['m3','m6','y1','y3','y5']){
+    const targets = ALIASES[key].map(a=>norm(a));
+    if(targets.some(t=>normRow1.includes(t))){ hasMetric=true; break; }
+  }
+  if(!hasMetric){
+    return {header:row0,startRow:1};
+  }
+  const len=Math.max(row0.length,row1.length);
+  const combined=new Array(len).fill("");
+  for(let i=0;i<len;i++){
+    if(i<=1) combined[i]=row0[i] || row1[i] || "";
+    else combined[i]=row1[i] || row0[i] || "";
+  }
+  return {header:combined,startRow:2};
+}
+
+/* —— 映射（物件模式，支援「報酬率.三個月%」這種欄位） —— */
+function mapJsonRows(json){
+  const lookup = {};
+  for (const k in ALIASES){
+    ALIASES[k].forEach(a => lookup[norm(a)] = k);
+  }
+
+  const rows = [];
+
+  json.forEach(r => {
+    const tmp = {};
+
+    // 這裡關鍵：欄位名稱如果是「報酬率.三個月%」，只拿最後一段「三個月%」來判斷
+    Object.keys(r).forEach(c => {
+      const base = c.split('.').pop();          // 例如 "報酬率.三個月%" -> "三個月%"
+      const key  = lookup[norm(base)];          // 去對 ALIASES
+      if (key) tmp[key] = r[c];
+    });
+
+    const name =
+      tmp.name ||
+      r['標的名稱'] ||
+      r['基金名稱'] ||
+      r['名稱']     ||
+      '';
+
+    const rec = {
+      "基金名稱": String(name || ""),
+      "三個月":   importToDecimal(tmp.m3),
+      "六個月":   importToDecimal(tmp.m6),
+      "一年":     importToDecimal(tmp.y1),
+      "三年":     importToDecimal(tmp.y3),
+      "五年":     importToDecimal(tmp.y5)
+    };
+
+    const hasValues = ["三個月","六個月","一年","三年","五年"]
+      .some(k => Number.isFinite(rec[k]));
+
+    const keep = String(rec["基金名稱"] || "").trim() !== "" || hasValues;
+    if (keep) rows.push(rec);
+  });
+
+  // 如果完全沒有任何一筆有數值，回傳空陣列，讓外層自動 fallback 到 mapArrayRows
+  const anyValue = rows.some(rec =>
+    ["三個月","六個月","一年","三年","五年"]
+      .some(k => Number.isFinite(rec[k]))
+  );
+  return anyValue ? rows : [];
+}
+
+/* —— 映射（陣列模式，含兩列表頭） —— */
+function mapArrayRows(arr){
+  if(!arr || arr.length<2) return [];
+  const meta=buildHeaderFromArray(arr);
+  const header=meta.header;
+  const startRow=meta.startRow;
+
+  const idx={};
+  for(const key in ALIASES){
+    const targets = ALIASES[key].map(norm);
+    idx[key] = header.findIndex(h=>targets.includes(norm(h)));
+  }
+  const rows=[];
+  for(let i=startRow;i<arr.length;i++){
+    const row=arr[i]||[];
+    const rec={
+      "基金名稱": idx.name>=0? row[idx.name] :"",
+      "三個月":   importToDecimal(idx.m3>=0? row[idx.m3] :""),
+      "六個月":   importToDecimal(idx.m6>=0? row[idx.m6] :""),
+      "一年":     importToDecimal(idx.y1>=0? row[idx.y1] :""),
+      "三年":     importToDecimal(idx.y3>=0? row[idx.y3] :""),
+      "五年":     importToDecimal(idx.y5>=0? row[idx.y5] :"")
+    };
+    const hasValues = ["三個月","六個月","一年","三年","五年"].some(k => Number.isFinite(rec[k]));
+    const keep = String(rec["基金名稱"]||"").trim()!=="" || hasValues;
+    if(keep) rows.push(rec);
+  }
+  return rows;
+}
+
+/* ========= 匯入 ========= */
 async function importFile(file){
   setLamp('amber','讀取中…');
   const ok = await ensureXLSX();
@@ -567,54 +670,18 @@ async function importFile(file){
       }
       document.getElementById('tbody').innerHTML='';
       const frag=document.createDocumentFragment();
-      rowsUse.forEach(r=>frag.appendChild(makeRowEl(r,{strictImport:true}))); // ★ 嚴格匯入顯示
+      rowsUse.forEach(r=>frag.appendChild(makeRowEl(r,{fromImport:true})));
       document.getElementById('tbody').appendChild(frag);
-
-      // 不再做「統一格式化」以避免覆蓋嚴格規則
 
       calcAll();
       setLamp('green',`已匯入 ${rowsUse.length} 筆`);
       document.getElementById('msg').textContent=`已匯入 ${rowsUse.length} 筆，自動計算完成。`;
     }catch(err){
+      console.error(err);
       setLamp('red','未匯入'); document.getElementById('msg').textContent='匯入失敗：檔案內容或格式無法解析。';
     }finally{ saveUI(); }
   };
   reader.readAsArrayBuffer(file);
-}
-
-/* —— 映射（物件/陣列） —— */
-function mapJsonRows(json){
-  const lookup={}; for(const k in ALIASES){ ALIASES[k].forEach(a=>lookup[norm(a)]=k); }
-  const rows=json.map(r=>{
-    const tmp={}; Object.keys(r).forEach(c=>{ const k=lookup[norm(c)]; if(k) tmp[k]=r[c]; });
-    return {"基金名稱":tmp.name||"","三個月":tmp.m3||"","六個月":tmp.m6||"","一年":tmp.y1||"","三年":tmp.y3||"","五年":tmp.y5||""};
-  }).filter(r=>r["基金名稱"]||["三個月","六個月","一年","三年","五年"].some(k=>String(r[k]).trim()!==""));
-  return rows;
-}
-function mapArrayRows(arr){
-  if(!arr || arr.length<2) return [];
-  const header=arr[0].map(h=>String(h||""));
-  const idx = {};
-  for(const key in ALIASES){
-    const targets = ALIASES[key].map(norm);
-    idx[key] = header.findIndex(h=>targets.includes(norm(h)));
-  }
-  const rows=[];
-  for(let i=1;i<arr.length;i++){
-    const row=arr[i]||[];
-    const rec={
-      "基金名稱": idx.name>=0? row[idx.name] :"",
-      "三個月":   idx.m3>=0? row[idx.m3] :"",
-      "六個月":   idx.m6>=0? row[idx.m6] :"",
-      "一年":     idx.y1>=0? row[idx.y1] :"",
-      "三年":     idx.y3>=0? row[idx.y3] :"",
-      "五年":     idx.y5>=0? row[idx.y5] :""
-    };
-    const hasValues = ["三個月","六個月","一年","三年","五年"].some(k => String(rec[k]||"").trim()!=="");
-    const keep = String(rec["基金名稱"]||"").trim()!=="" || hasValues;
-    if(keep) rows.push(rec);
-  }
-  return rows;
 }
 
 /* ========= 截圖 ========= */
@@ -684,29 +751,21 @@ document.getElementById('tbody').addEventListener('click',e=>{
     const tr=e.target.closest('tr'); tr.remove(); updateRowsInfo(); applyVisibility(); buildSummary(); saveUI();
   }
 });
-// 即時輸入標示（不改顯示）
 document.getElementById('tbody').addEventListener('input',e=>{
   if(e.target.tagName==='INPUT'){ setLamp('amber','輸入變更中…'); }
 });
-// 失焦：依規則顯示 + 存 raw 小數
+// 失焦：更新 raw + 重新計算
 document.getElementById('tbody').addEventListener('blur', (e)=>{
   if(e.target.tagName !== 'INPUT') return;
   const td = e.target.closest('td'); if(!td) return;
   const cellIdx = Array.from(td.parentElement.children).indexOf(td);
   if (cellIdx >= 1 && cellIdx <= 5){ // 3M..5Y
-    const original = e.target.value;
-    const raw = parseUserEntryToDecimal(original); // 小數比例（給計算用）
+    const raw = parseUserEntryToDecimal(e.target.value);
     if(Number.isFinite(raw)){
       e.target.dataset.raw = String(raw);
-      // 手動輸入的顯示：有 % → 標準化；沒有 % → 原值 *100 + %
-      if (hasPercent(original)){
-        e.target.value = normalizePercentText(original);
-      }else{
-        const num = Number(String(original).trim());
-        e.target.value = Number.isFinite(num) ? (num*100).toFixed(2) + '%' : toPercentDisplay(raw);
-      }
+      e.target.value = toPercentDisplay(raw);
+      debouncedRecalc();
     }
-    debouncedRecalc();
   }
 }, true);
 
@@ -721,7 +780,7 @@ document.getElementById('chkCompact').addEventListener('change',e=>{
 });
 
 /* ========= 初始 ========= */
-addRow({}); // 初始空白列
+addRow({});
 loadUI();
 applyVisibility();
 setLamp('red','未匯入');
